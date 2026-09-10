@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+              .oauth2Login(Customizer.withDefaults())
 
               .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
