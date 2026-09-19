@@ -2,6 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.model.Product;
 import com.example.demo.repo.ProductRepo;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +22,7 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    @Cacheable(value = "products", key = "#id")
     public Product getProductById(int id) {
         return productRepository.findById(id)
                 .orElse(null);
@@ -27,6 +31,8 @@ public class ProductService {
     public Product createProduct(Product product) {
         return productRepository.save(product);
     }
+
+    @CachePut(value = "products", key = "#id")
 
     public Product updateProduct(int id, Product updatedProduct) {
 
@@ -44,6 +50,7 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(int id) {
         productRepository.deleteById(id);
     }
