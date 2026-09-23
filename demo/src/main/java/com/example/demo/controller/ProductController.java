@@ -1,7 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Product;
+import com.example.demo.Dto.product.Request.ProductRequest;
+import com.example.demo.Dto.product.Response.ProductResponse;
 import com.example.demo.service.ProductService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,33 +20,39 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public List<ProductResponse> getAllProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String category) {
+
+        return productService.getAllProducts(name, brand, category);
     }
 
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable int id) {
+    public ProductResponse getProductById(@PathVariable String id) {
         return productService.getProductById(id);
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productService.createProduct(product);
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductResponse createProduct(
+            @Valid @RequestBody ProductRequest request) {
+
+        return productService.createProduct(request);
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(
-            @PathVariable int id,
-            @RequestBody Product product) {
+    public ProductResponse updateProduct(
+            @PathVariable String id,
+            @Valid @RequestBody ProductRequest request) {
 
-        return productService.updateProduct(id, product);
+        return productService.updateProduct(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable int id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(@PathVariable String id) {
 
         productService.deleteProduct(id);
-
-        return "Product deleted successfully";
     }
 }

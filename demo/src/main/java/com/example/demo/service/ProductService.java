@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.Dto.product.Request.ProductRequest;
+import com.example.demo.Dto.product.Response.ProductResponse;
 import com.example.demo.model.Product;
 import com.example.demo.repo.ProductRepo;
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,40 +20,89 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProducts(
+            String name,
+            String brand,
+            String category) {
+
+        return productRepository.findProducts(name, brand, category)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Cacheable(value = "products", key = "#id")
-    public Product getProductById(int id) {
-        return productRepository.findById(id)
-                .orElse(null);
+    public ProductResponse getProductById(String id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found with id: " + id)
+                );
+
+        return mapToResponse(product);
     }
 
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
+    public ProductResponse createProduct(ProductRequest request) {
+
+        Product product = new Product();
+
+        product.setName(request.getName());
+        product.setBrand(request.getBrand());
+        product.setCategory(request.getCategory());
+        product.setDescription(request.getDescription());
+        product.setImageUrl(request.getImageUrl());
+        product.setAttributes(request.getAttributes());
+
+        Product savedProduct = productRepository.save(product);
+
+        return mapToResponse(savedProduct);
     }
 
     @CachePut(value = "products", key = "#id")
-
-    public Product updateProduct(int id, Product updatedProduct) {
+    public ProductResponse updateProduct(
+            String id,
+            ProductRequest request) {
 
         Product existingProduct = productRepository.findById(id)
-                .orElse(null);
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found with id: " + id)
+                );
 
-        if (existingProduct == null) {
-            return null;
-        }
+        existingProduct.setName(request.getName());
+        existingProduct.setBrand(request.getBrand());
+        existingProduct.setCategory(request.getCategory());
+        existingProduct.setDescription(request.getDescription());
+        existingProduct.setImageUrl(request.getImageUrl());
+        existingProduct.setAttributes(request.getAttributes());
 
-        existingProduct.setName(updatedProduct.getName());
-        existingProduct.setDescription(updatedProduct.getDescription());
-        existingProduct.setType(updatedProduct.getType());
+        Product updatedProduct = productRepository.save(existingProduct);
 
-        return productRepository.save(existingProduct);
+        return mapToResponse(updatedProduct);
     }
 
     @CacheEvict(value = "products", key = "#id")
-    public void deleteProduct(int id) {
-        productRepository.deleteById(id);
+    public void deleteProduct(String id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found with id: " + id)
+                );
+
+        productRepository.delete(product);
+    }
+
+    private ProductResponse mapToResponse(Product product) {
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .brand(product.getBrand())
+                .category(product.getCategory())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .attributes(product.getAttributes())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
     }
 }
