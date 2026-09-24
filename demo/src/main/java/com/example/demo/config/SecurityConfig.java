@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.exception.security.CustomAuthenticationEntryPoint;
 import com.example.demo.service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -30,32 +31,38 @@ public class SecurityConfig {
     private MyUserDetailsService userDetailsService;
     @Autowired
     private JwtFilter jwtFilter;
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http){
-      return   http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request->
-                        request.requestMatchers("/register","/login").permitAll()
-                        .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-              .oauth2Login(Customizer.withDefaults())
 
-              .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint authenticationEntryPoint) {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(authenticationEntryPoint))
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers("/register", "/login").permitAll()
+                                .anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(Customizer.withDefaults())
+
+
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
 
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider provider=new DaoAuthenticationProvider(userDetailsService);
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
         return provider;
     }
+
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config){
-        return  config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
+        return config.getAuthenticationManager();
     }
 
 //    @Bean

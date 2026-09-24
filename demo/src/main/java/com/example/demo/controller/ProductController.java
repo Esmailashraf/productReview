@@ -4,6 +4,7 @@ import com.example.demo.Dto.product.Request.ProductRequest;
 import com.example.demo.Dto.product.Response.ProductResponse;
 import com.example.demo.service.ProductService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
+@Slf4j
 public class ProductController {
 
     private final ProductService productService;

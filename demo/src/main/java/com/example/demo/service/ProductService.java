@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.Dto.product.Request.ProductRequest;
 import com.example.demo.Dto.product.Response.ProductResponse;
+import com.example.demo.exception.product.ProductAlreadyExistsException;
+import com.example.demo.exception.product.ProductNotFoundException;
 import com.example.demo.model.Product;
 import com.example.demo.repo.ProductRepo;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,13 +38,16 @@ public class ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Product not found with id: " + id)
+                        new ProductNotFoundException("Product not found with id: " + id)
                 );
 
         return mapToResponse(product);
     }
 
     public ProductResponse createProduct(ProductRequest request) {
+        if (productRepository.existsByName(request.getName())) {
+            throw new ProductAlreadyExistsException("Product name already exists " + request.getName());
+        }
 
         Product product = new Product();
 
@@ -65,7 +70,7 @@ public class ProductService {
 
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Product not found with id: " + id)
+                        new ProductAlreadyExistsException("Product not found with id: " + id)
                 );
 
         existingProduct.setName(request.getName());
@@ -85,7 +90,7 @@ public class ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Product not found with id: " + id)
+                        new ProductNotFoundException("Product not found with id: " + id)
                 );
 
         productRepository.delete(product);
