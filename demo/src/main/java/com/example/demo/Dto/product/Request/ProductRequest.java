@@ -11,10 +11,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class ProductRequest {
     private String name;
-
     private String brand;
     private String category;
     private String description;
-    private String imageUrl;
     private Map<String, Object> attributes;
 }
